@@ -1,36 +1,57 @@
 import { useState } from 'react';
-import './App.css';
 
-function App() {
-  const [titleText, setTitleText] = useState('Задание 1');
-
-  const [elements, setElements] = useState<number[]>([]);
-
-  const handleChangeTitle = () => {
-    setTitleText('Обновлённый заголовок');
-  };
-
-  const handleAddElement = () => {
-    setElements(prev => [...prev, prev.length + 1]);
-  };
-
-  return ( //Структура JSX
-    <>
-      <h1 id="title">{titleText}</h1>
-
-      <p className="text">Первый параграф</p>
-      <p className="text">Второй параграф</p>
-      <p className="text">Третий параграф</p>
-
-      <button id="changeBtn" onClick={handleChangeTitle}> Изменить содержимое </button>
-      <button id="addBtn" onClick={handleAddElement}> Добавить элемент </button>
-      <div id = "containder">
-      {elements.map((elem, index) => (
-        <div key = {index}> Новый элемент {elem}</div>
-      ))}
-      </div>
-    </>
-  );
+interface Note {
+  id: number;
+  title: string;
+  content: string;
+  data: string;
 }
 
-export default App;
+function NotesTable(){
+
+const [notes, setNotes] = useState<Note[]>([]);
+
+const deleteNote = (id: number) => {
+  setNotes(notes.filter(note => note.id !== id));
+};
+
+const AddElement = () => {
+  const newNote = {
+    id: notes.length + 1,
+    title: `Заметка ${notes.length + 1}`,
+    content: `Новое содержание ${notes.length + 1}`,
+    data: new Date().toLocaleDateString(),
+  };
+  setNotes([...notes, newNote]);
+};
+
+return (
+
+  <div style = {{ padding: '300px'}}>
+    <h1>Мои заметки</h1>
+    <table style = {{width: '100%', borderCollapse: 'collapse'}}>
+      <thead>
+       <tr>
+        <th style = {{border: '1px solid #ddd', padding: '8px'}}>ID</th>
+        <th style = {{border: '1px solid #ddd', padding: '8px'}}>Заголовок</th>
+        <th style = {{border: '1px solid #ddd', padding: '8px'}}>Содержание</th>
+        <th style = {{border: '1px solid #ddd', padding: '8px'}}>Дата</th>
+        </tr> 
+      </thead>
+      <tbody>
+       {notes.map(note => (
+        <tr key = {note.id}>
+          <td style = {{border: '1px solid #ddd', padding: '8px'}}>{note.id}</td>
+          <td style = {{border: '1px solid #ddd', padding: '8px'}}>{note.title}</td>
+          <td style = {{border: '1px solid #ddd', padding: '8px'}}>{note.content}</td>
+          <td style = {{border: '1px solid #ddd', padding: '8px'}}>{note.data}</td>
+          <button onClick = {() => deleteNote(note.id)}>Удалить</button>
+        </tr>
+      ))}
+      </tbody>
+    </table>
+     <button id ="addBtn" onClick={AddElement}> Добавить элемент </button>
+  </div>
+);
+};
+export default NotesTable;
