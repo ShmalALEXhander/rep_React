@@ -6,13 +6,19 @@ interface Note {
   title: string;
   content: string;
   data: string;
-}
+}// необходим для определения полей составного массива Note   
 
-function NoteTable(){
-
+function NoteTable(){ //функциональный компонент, в котором будет происходить отрисовка (рендеринг) разметки.
+//Дано:
+//notes есть состояние, в котором хранится Note и это состояние будет менятся посредством использования функции setNote
 const [notes, setNote] = useState<Note[]>([]);
 const curr_id = useRef(1);
+// Глобальные переменные, которыми являются переменные, находящиеся вне функциональных компонентов, НЕДОПУСТИПЫ в серьёзных проектах.
+// По этой причине их помещают в структурные модули. в числе которых useState, useRef/.
 
+
+//Всё просто: при обработке события "нажатия кнопки" вызывется функция (стоит подумать почему {}), которая является стрелочного типа,
+// Создаётся экземпляр заметки, затем обновляется состояние notes путём использования функции setNote , которая копирует прошлое состояние notes и добавляет newNote. 
 const add_element = () => {
   const newNote = {
   id: curr_id.current,
@@ -20,15 +26,17 @@ const add_element = () => {
   content: `Cодержание ${curr_id.current}`,
   data: new Date().toLocaleDateString(),
   };
-  setNote([...notes, newNote]);
+  setNote([...notes, newNote]); // литеральный массив.
   curr_id.current +=1;  
 }
 
+//Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
+
 const delete_note = (id: number) => {
-  setNote(notes.filter(note => note.id !== id));
+  setNote(notes.filter(note => note.id !== id)); 
 }
 
-
+//Все стили перенёс в App.tsx 
 return(
   <div>
     <h1>Мои заметки</h1>
@@ -57,4 +65,4 @@ return(
   </div>
 );
 };
-export default NoteTable;
+export default NoteTable; // Сделал доступной из всей программы.
