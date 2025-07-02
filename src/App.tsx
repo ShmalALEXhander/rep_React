@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from "react";
+import './App.css';
 
 interface Note {
   id: number;
@@ -7,80 +8,53 @@ interface Note {
   data: string;
 }
 
-function NotesTable() {
-  const [notes, setNotes] = useState<Note[]>([]);
+function NoteTable(){
 
-  useEffect(() => {
-    fetch('http://localhost:5173')
-      .then(response => {
-        console.log('Ответ получен:', response);
-        return response.json()})
-      .then(data => setNotes(data))
-      .catch(error => console.error('Ошибка загрузки заметок:', error));
-  }, []);
+const [notes, setNote] = useState<Note[]>([]);
+const curr_id = useRef(1);
 
-  const deleteNote = (id: number) => {
-    fetch(`http://localhost:5173/api/notes/${id}`, {
-      method: 'DELETE',
-    })
-      .then(response => {
-        if (response.ok) {
-          setNotes(prevNotes => prevNotes.filter(note => note.id !== id));
-        } else {
-          console.error('Ошибка при удалении заметки');
-        }
-      })
-      .catch(error => console.error('Ошибка сети:', error));
+const add_element = () => {
+  const newNote = {
+  id: curr_id.current,
+  title: `Заметка ${curr_id.current}`,
+  content: `Cодержание ${curr_id.current}`,
+  data: new Date().toLocaleDateString(),
   };
-
-  const AddElement = () => {
-    const newNote = {
-      title: `Заметка ${notes.length + 1}`,
-      content: `Новое содержание ${notes.length + 1}`,
-      data: new Date().toLocaleDateString(),
-    };
-
-    fetch('http://localhost:5173/api/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newNote),
-    })
-      .then(response => response.json())
-      .then(createdNote => {
-        setNotes(prevNotes => [...prevNotes, createdNote]);
-      })
-      .catch(error => console.error('Ошибка при добавлении:', error));
-  };
-
-  return (
-    <div style={{ padding: '300px' }}>
-      <h1>Мои заметки</h1>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>ID</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Заголовок</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Содержание</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Дата</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          {notes.map(note => (
-            <tr key={note.id}>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{note.id}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{note.title}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{note.content}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{note.data}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                <button onClick={() => deleteNote(note.id)}>Удалить</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button id="addBtn" onClick={AddElement}>Добавить элемент</button>
-    </div>
-  );
+  setNote([...notes, newNote]);
+  curr_id.current +=1;  
 }
-export default NotesTable;
+
+const delete_note = (id: number) => {
+  setNote(notes.filter(note => note.id !== id));
+}
+
+
+return(
+  <div>
+    <h1>Мои заметки</h1>
+    <table className = "table">
+      <thead>
+      <tr>
+      <th>ID</th>
+      <th>Заголовок</th>
+      <th>Содержание</th>
+      <th>Дата</th>
+      </tr>
+      </thead>
+      <tbody>
+        {notes.map(note => (
+        <tr key = {note.id}>   
+          <td>{note.id}</td>
+          <td>{note.title}</td>
+          <td>{note.content}</td>
+          <td>{note.data}</td>
+          <button onClick = {()=>delete_note(note.id)}>Удалить</button>
+        </tr>
+        ))}
+      </tbody>
+    </table>
+    <button id = "addBtn" onClick = {add_element}>Добавить элемент</button>
+  </div>
+);
+};
+export default NoteTable;
