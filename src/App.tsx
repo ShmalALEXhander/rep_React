@@ -11,7 +11,7 @@ function NotesTable() {
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:5173')
+    fetch('https://localhost:7242/api/todos/completes')
       .then(response => {
         console.log('Ответ получен:', response);
         return response.json()})
@@ -20,7 +20,7 @@ function NotesTable() {
   }, []);
 
   const deleteNote = (id: number) => {
-    fetch(`http://localhost:5173/api/notes/${id}`, {
+    fetch(`"https://localhost:7242/todos/completes/${id}"`, {
       method: 'DELETE',
     })
       .then(response => {
@@ -40,7 +40,7 @@ function NotesTable() {
       data: new Date().toLocaleDateString(),
     };
 
-    fetch('http://localhost:5173/api/notes', {
+    fetch('https://localhost:7242/api/todos/completes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newNote),
