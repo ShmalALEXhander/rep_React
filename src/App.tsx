@@ -29,14 +29,11 @@ const add_element = () => {
   setNote([...notes, newNote]); // литеральный массив.
   curr_id.current +=1;  
 }
-
-//Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
-
  const handleChange = (id: number, field: keyof Omit<Note, 'id'>, value: string) => {
     setNote(notes.map(note => 
       note.id === id ? { ...note, [field]: value } : note
     ));
-  };
+  }; //Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
 
 const delete_note = (id: number) => {
   setNote(notes.filter(note => note.id !== id)); 
@@ -63,7 +60,9 @@ return(
                 <input
                   type="text"
                   value={note.title}
-                  onChange={(event) => handleChange(note.id, 'title', event.target.value)}
+                  onChange={(event) => handleChange(note.id, 'title', event.target.value)} /*объект события, передаваемый браузером при срабатывании события (input)., элемент,вызвавший событие, текущее
+                  значение этого элемента, то что пользователь вводит  */
+                  /*Cтандартный способ получать данные из элементов формы в React при обработке событий.*/
                 />
               </td>
               <td>
