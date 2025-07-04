@@ -32,11 +32,7 @@ const add_element = () => {
 
 //Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
 
- const handleChange = (
-    id: number,
-    field: keyof Omit<Note, 'id'>,
-    value: string
-  ) => {
+ const handleChange = (id: number, field: keyof Omit<Note, 'id'>, value: string) => {
     setNote(notes.map(note => 
       note.id === id ? { ...note, [field]: value } : note
     ));
