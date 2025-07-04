@@ -32,6 +32,16 @@ const add_element = () => {
 
 //Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
 
+ const handleChange = (
+    id: number,
+    field: keyof Omit<Note, 'id'>,
+    value: string
+  ) => {
+    setNote(notes.map(note => 
+      note.id === id ? { ...note, [field]: value } : note
+    ));
+  };
+
 const delete_note = (id: number) => {
   setNote(notes.filter(note => note.id !== id)); 
 }
@@ -51,14 +61,33 @@ return(
       </thead>
       <tbody>
         {notes.map(note => (
-        <tr key = {note.id}>   
-          <td>{note.id}</td>
-          <td>{note.title}</td>
-          <td>{note.content}</td>
-          <td>{note.data}</td>
-          <button onClick = {()=>delete_note(note.id)}>Удалить</button>
-        </tr>
-        ))}
+            <tr key={note.id}>
+              <td>{note.id}</td>
+              <td>
+                <input
+                  type="text"
+                  value={note.title}
+                  onChange={(event) => handleChange(note.id, 'title', event.target.value)}
+                />
+              </td>
+              <td>
+                <textarea
+                  value={note.content}
+                  onChange={(event) => handleChange(note.id, 'content', event.target.value)}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  value={note.data}
+                  onChange={(event) => handleChange(note.id, 'data', event.target.value)}
+                />
+              </td>
+              <td>
+                <button onClick={() => delete_note(note.id)}>Удалить</button>
+              </td>
+            </tr>
+          ))}
       </tbody>
     </table>
     <button id = "addBtn" onClick = {add_element}>Добавить элемент</button>
