@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import './App.css';
 
 interface Note {
@@ -19,6 +19,24 @@ const curr_id = useRef(1);
 
 //Всё просто: при обработке события "нажатия кнопки" вызывется функция (стоит подумать почему {}), которая является стрелочного типа,
 // Создаётся экземпляр заметки, затем обновляется состояние notes путём использования функции setNote , которая копирует прошлое состояние notes и добавляет newNote. 
+useEffect(() => {
+  fetch('https://localhost:7242/api/todos/completes')
+  .then(response => {
+    if (!response.ok){
+      throw new Error('Ошибка загрузки данных');
+    }
+    return response.json();
+  })
+  .then((data: Note[])=>{
+    setNote(data);
+     const maxId = data.reduce((max, note) => Math.max(max, note.id), 0);
+      curr_id.current = maxId + 1;
+  })
+  .catch(error => {
+    console.error('Ошибка при загрузке заметки', error);
+  });
+},[]);
+
 const add_element = () => {
   const newNote = {
   id: curr_id.current,
@@ -26,13 +44,33 @@ const add_element = () => {
   content: `Cодержание ${curr_id.current}`,
   data: new Date().toLocaleDateString(),
   };
-  setNote([...notes, newNote]); // литеральный массив.
-  curr_id.current += 1;  
+  fetch('https://localhost:7242/api/todos/completes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newNote),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Ошибка при добавлении заметки');
+    }
+    return response.json();
+  })
+  .then((createdNote: Note) => {
+    setNote(prevNotes => [...prevNotes, createdNote]);
+    curr_id.current += 1;
+  })
+  .catch(error => {
+    console.error('Ошибка при добавлении:', error);
+  });
 }
-//Изменяем состояние при удалении по id  . 
-const delete_note = (id: number) => {
-  setNote(notes.filter(note => note.id !== id)); 
-}
+
+ const delete_note = (id: number) => {
+    setNote(prevNotes => prevNotes.filter(note => note.id !== id));
+    // Можно отправить DELETE-запрос на сервер
+    fetch(`https://localhost:7242/api/todos/completes/${id}`, {
+      method: 'DELETE',
+    }).catch(error => console.error('Ошибка удаления:', error));
+  };
 
 const edit_note = (note: Note) =>{
   setEditNote(note);
@@ -49,12 +87,22 @@ const change_handle = ( field: keyof Omit<Note, "id">, value: string) => {
 }
 
 const save_handle = () => {
-  if(editNote)
-    setNote(
-      notes.map((note) =>
-        note.id === editNote.id ? editNote : note
+  if (!editNote) {
+    return;
+  }
+  
+  setNote(
+    notes.map((note) =>
+      note.id === editNote.id ? editNote : note
     )
   );
+
+  fetch(`https://localhost:7242/api/todos/completes/${editNote.id}`, {
+        method: 'PUT', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editNote),
+      }).catch(error => console.error('Ошибка при сохранении:', error));
+
   setEditNote(null);
 }
 
