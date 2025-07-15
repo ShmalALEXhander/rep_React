@@ -12,10 +12,10 @@ function NoteTable(){ //функциональный компонент, в ко
 //Дано:
 //notes есть состояние, в котором хранится Note и это состояние будет менятся посредством использования функции setNote
 const [notes, setNote] = useState<Note[]>([]);
+const [editNote, setEditNote] = useState<Note | null>(null);
 const curr_id = useRef(1);
 // Глобальные переменные, которыми являются переменные, находящиеся вне функциональных компонентов, НЕДОПУСТИПЫ в серьёзных проектах.
 // По этой причине их помещают в структурные модули. в числе которых useState, useRef/.
-
 
 //Всё просто: при обработке события "нажатия кнопки" вызывется функция (стоит подумать почему {}), которая является стрелочного типа,
 // Создаётся экземпляр заметки, затем обновляется состояние notes путём использования функции setNote , которая копирует прошлое состояние notes и добавляет newNote. 
@@ -27,20 +27,38 @@ const add_element = () => {
   data: new Date().toLocaleDateString(),
   };
   setNote([...notes, newNote]); // литеральный массив.
-  curr_id.current +=1;  
+  curr_id.current += 1;  
 }
- const handleChange = (id: number, field: keyof Omit<Note, 'id'>, value: string) => {
-    setNote(notes.map(note => 
-      note.id === id ? { ...note, [field]: value } : note
-    ));
-  }; //Изменяем состояние при удалении по id  . проходим filter по всему массиву и оставляем элементы которые не равно id.
-
+//Изменяем состояние при удалении по id  . 
 const delete_note = (id: number) => {
   setNote(notes.filter(note => note.id !== id)); 
 }
 
-//Все стили перенёс в App.tsx 
-return(
+const edit_note = (note: Note) =>{
+  setEditNote(note);
+};
+
+const cancel_handle = () => {
+  setEditNote(null);
+}
+
+const change_handle = ( field: keyof Omit<Note, "id">, value: string) => {
+ if(editNote){
+  setEditNote({ ...editNote, [field]: value});
+ }
+}
+
+const save_handle = () => {
+  if(editNote)
+    setNote(
+      notes.map((note) =>
+        note.id === editNote.id ? editNote : note
+    )
+  );
+  setEditNote(null);
+}
+
+return( //Все стили перенёс в App.tsx 
   <div>
     <h1>Мои заметки</h1>
     <table className = "table">
@@ -56,37 +74,68 @@ return(
         {notes.map(note => (
             <tr key={note.id}>
               <td>{note.id}</td>
+              <td>{note.title}</td>
+              <td>{note.content}</td>
+              <td>{note.data}</td>
               <td>
-                <input
-                  type="text"
-                  value={note.title}
-                  onChange={(event) => handleChange(note.id, 'title', event.target.value)} /*объект события, передаваемый браузером при срабатывании события (input)., элемент,вызвавший событие, текущее
-                  значение этого элемента, то что пользователь вводит  */
-                  /*Cтандартный способ получать данные из элементов формы в React при обработке событий.*/
-                />
+                <button onClick={() => edit_note(note)}>
+                  Редактировать
+                </button>
               </td>
               <td>
-                <textarea
-                  value={note.content}
-                  onChange={(event) => handleChange(note.id, 'content', event.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={note.data}
-                  onChange={(event) => handleChange(note.id, 'data', event.target.value)}
-                />
-              </td>
-              <td>
-                <button onClick={() => delete_note(note.id)}>Удалить</button>
-              </td>
+                <button onClick={() => delete_note(note.id)}>
+                  Удалить
+                </button>
+              </td>           
             </tr>
           ))}
       </tbody>
     </table>
-    <button id = "addBtn" onClick = {add_element}>Добавить элемент</button>
+    <button id = "addBtn" onClick = {add_element}>
+      Добавить элемент
+    </button>
+
+{editNote && (
+    <div className = "modal-overlay">
+      <div className = "modal">
+        <h2>Редактировать заметку</h2>
+
+        <div style={{ marginBottom:'10px' }}>
+        <label> Заголовок:</label>
+        <input
+          type = "text"
+          value = {editNote.title}
+          onChange={(e) => change_handle("title", e.target.value)}
+        />
+        </div>
+
+        <div style={{ marginBottom:'10px' }}>
+        <label> Содержание:</label>
+        <input
+          type = "text"
+          value = {editNote.content}
+          onChange={(e) => change_handle("content", e.target.value)}
+        />
+        </div>
+        <div style={{ marginBottom:'10px' }}>
+        <label> Дата:</label>
+        <input
+          type = "text"
+          value = {editNote.data}
+          onChange={(e) => change_handle("data", e.target.value)}
+        />
+        </div>
+
+        <div style={{ marginTop:'10px' }}>
+          <button onClick = {save_handle}>Подтвердить</button>
+          <button onClick = {cancel_handle}>Отмена</button>
+        </div>
+
+      </div>
+    </div>
+  )}
   </div>
+
 );
 };
 export default NoteTable; // Сделал доступной из всей программы.
