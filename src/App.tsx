@@ -11,7 +11,7 @@ interface Note {
 function App() {
   const [notes, setNote] = useState<Note[]>([]);
   const curr_id = useRef(1);
-  const originalNoteRef = useRef<Note | null>(null); // Храним оригинал здесь
+  const origNote = useRef<Note | null>(null); // Храним оригинал здесь
 
   const add_element = () => {
     const newNote = {
@@ -30,7 +30,7 @@ const delete_note = (id: number) => {
 }
 
   const edit_note = (note: Note) => {
-    originalNoteRef.current = { ...note }; // Запоминаем оригинал перед редактированием
+    origNote.current = { ...note }; // Запоминаем оригинал перед редактированием
     setNote(notes.map(n => 
       n.id === note.id 
         ? { ...n, isEdit: true } 
@@ -44,26 +44,25 @@ const delete_note = (id: number) => {
         ? { ...note, isEdit: false } 
         : n
     ));
-    originalNoteRef.current = null; // Очищаем ref после сохранения
+    origNote.current = null; // Очищаем ref после сохранения
   };
 
   const cancel_handle = (noteId: number) => {
-    if (originalNoteRef.current && originalNoteRef.current.id === noteId) {
+    if (origNote.current && origNote.current.id === noteId) {
       // Восстанавливаем оригинал, если он есть
       setNote(notes.map(n => 
         n.id === noteId 
-          ? { ...originalNoteRef.current!, isEdit: false } 
+          ? { ...origNote.current!, isEdit: false } 
           : n
       ));
     } else {
-      // Просто закрываем редактирование, если оригинал не найден
       setNote(notes.map(n => 
         n.id === noteId 
           ? { ...n, isEdit: false } 
           : n
       ));
     }
-    originalNoteRef.current = null; // Очищаем ref
+    origNote.current = null; // Очищаем ref
   };
 
   const change_handle = (id: number, field: keyof Note, value: string) => {
