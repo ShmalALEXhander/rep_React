@@ -1,3 +1,4 @@
+import './App.css'
 import { useState, useRef } from 'react';
 
 interface Note {
@@ -25,57 +26,44 @@ function App() {
     curr_id.current += 1;
   };
 
-const delete_note = (id: number) => {
-  setNote(notes.filter(note => note.id !== id));
-}
+  const delete_note = (id: number) => {
+    setNote(notes.filter(n => n.id !== id))
+  }
 
   const edit_note = (note: Note) => {
     origNote.current = { ...note }; // Запоминаем оригинал перед редактированием
-    setNote(notes.map(n => 
-      n.id === note.id 
-        ? { ...n, isEdit: true } 
-        : { ...n, isEdit: false }
+    setNote(notes.map(n => n.id === note.id ? { ...n, isEdit: true } : { ...n, isEdit: false }
     ));
   };
 
   const save_handle = (note: Note) => {
     setNote(notes.map(n => 
-      n.id === note.id 
-        ? { ...note, isEdit: false } 
-        : n
+      n.id === note.id ? { ...note, isEdit: false } : n
     ));
-    origNote.current = null; // Очищаем ref после сохранения
+    origNote.current = null; 
   };
 
   const cancel_handle = (noteId: number) => {
     if (origNote.current && origNote.current.id === noteId) {
-      // Восстанавливаем оригинал, если он есть
-      setNote(notes.map(n => 
-        n.id === noteId 
-          ? { ...origNote.current!, isEdit: false } 
-          : n
-      ));
+      setNote(notes.map(n =>  n.id === noteId ? { ...origNote.current!, isEdit: false } : n));
     } else {
-      setNote(notes.map(n => 
-        n.id === noteId 
-          ? { ...n, isEdit: false } 
-          : n
-      ));
+      setNote(notes.map(n => n.id === noteId ? { ...n, isEdit: false } : n));
     }
-    origNote.current = null; // Очищаем ref
+    origNote.current = null;
   };
 
   const change_handle = (id: number, field: keyof Note, value: string) => {
-    setNote(notes.map(n => 
-      n.id === id  ? { ...n, [field]: value } : n
+    setNote(notes.map(n => n.id === id  ? { ...n, [field]: value } : n
     ));
   };
 
+  const isEditing = notes.some(note => note.isEdit);
+
   return (
     <div className="container">
-      <h1>Управление заметками</h1>
-      
-      <table className="notes-table">
+      <h1>Мои заметки</h1>
+
+      <table className="table">
         <thead>
           <tr>
             <th>ID</th>
@@ -89,7 +77,6 @@ const delete_note = (id: number) => {
           {notes.map((note) => (
             <tr key={note.id} className={note.isEdit ? "editing-row" : ""}>
               <td>{note.id}</td>
-              
               <td>
                 {note.isEdit ? (
                   <input
@@ -100,7 +87,6 @@ const delete_note = (id: number) => {
                   note.title
                 )}
               </td>
-              
               <td>
                 {note.isEdit ? (
                   <input
@@ -111,9 +97,7 @@ const delete_note = (id: number) => {
                   note.content
                 )}
               </td>
-              
               <td>{note.data}</td>
-              
               <td>
                 {note.isEdit ? (
                   <>
@@ -125,20 +109,28 @@ const delete_note = (id: number) => {
                     </button>
                   </>
                 ) : (
-                  <button className="edit-btn" onClick={() => edit_note(note)}>
+                  <button
+                    className="edit-btn"
+                    onClick={() => edit_note(note)}
+                    disabled={isEditing}
+                  >
                     Редактировать
-                  </button>             
+                  </button>
                 )}
+                <button
+                  className="delete-btn"
+                  onClick={() => delete_note(note.id)}
+                  disabled={isEditing}
+                >
+                  Удалить
+                </button>
               </td>
-              <button className="delete-btn" onClick={() => delete_note(note.id)}>
-                      Удалить
-                    </button>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <button className="add-btn" onClick={add_element}>
+      <button className="add-btn" onClick={add_element} disabled={isEditing}>
         Добавить заметку
       </button>
     </div>
