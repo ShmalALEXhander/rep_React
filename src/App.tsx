@@ -10,11 +10,11 @@ interface Note {
 }
 
 function App() {
-  const [notes, setNote] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const curr_id = useRef(1);
   const origNote = useRef<Note | null>(null); // Храним оригинал здесь
 
-  const add_element = () => {
+  const addElement = () => {
     const newNote = {
       id: curr_id.current,
       title: `Заметка ${curr_id.current}`,
@@ -22,38 +22,38 @@ function App() {
       data: new Date().toLocaleDateString(),
       isEdit: false,
     };
-    setNote([...notes, newNote]);
+    setNotes([...notes, newNote]);
     curr_id.current += 1;
   };
 
-  const delete_note = (id: number) => {
-    setNote(notes.filter(n => n.id !== id))
+  const deleteNote = (id: number) => {
+    setNotes(notes.filter(n => n.id !== id))
   }
 
-  const edit_note = (note: Note) => {
+  const editNote = (note: Note) => {
     origNote.current = { ...note }; // Запоминаем оригинал перед редактированием
-    setNote(notes.map(n => n.id === note.id ? { ...n, isEdit: true } : { ...n, isEdit: false }
+    setNotes(notes.map(n => n.id === note.id ? { ...n, isEdit: true } : { ...n, isEdit: false }
     ));
   };
 
-  const save_handle = (note: Note) => {
-    setNote(notes.map(n => 
+  const saveHandle = (note: Note) => {
+    setNotes(notes.map(n => 
       n.id === note.id ? { ...note, isEdit: false } : n
     ));
     origNote.current = null; 
   };
 
-  const cancel_handle = (noteId: number) => {
+  const cancelHandle = (noteId: number) => {
     if (origNote.current && origNote.current.id === noteId) {
-      setNote(notes.map(n =>  n.id === noteId ? { ...origNote.current!, isEdit: false } : n));
+      setNotes(notes.map(n =>  n.id === noteId ? { ...origNote.current!, isEdit: false } : n));
     } else {
-      setNote(notes.map(n => n.id === noteId ? { ...n, isEdit: false } : n));
+      setNotes(notes.map(n => n.id === noteId ? { ...n, isEdit: false } : n));
     }
     origNote.current = null;
   };
 
-  const change_handle = (id: number, field: keyof Note, value: string) => {
-    setNote(notes.map(n => n.id === id  ? { ...n, [field]: value } : n
+  const changeHandle = (id: number, field: keyof Note, value: string) => {
+    setNotes(notes.map(n => n.id === id  ? { ...n, [field]: value } : n
     ));
   };
 
@@ -81,7 +81,7 @@ function App() {
                 {note.isEdit ? (
                   <input
                     value={note.title}
-                    onChange={(e) => change_handle(note.id, 'title', e.target.value)}
+                    onChange={(e) => changeHandle(note.id, 'title', e.target.value)}
                   />
                 ) : (
                   note.title
@@ -91,7 +91,7 @@ function App() {
                 {note.isEdit ? (
                   <input
                     value={note.content}
-                    onChange={(e) => change_handle(note.id, 'content', e.target.value)}
+                    onChange={(e) => changeHandle(note.id, 'content', e.target.value)}
                   />
                 ) : (
                   note.content
@@ -101,17 +101,17 @@ function App() {
               <td>
                 {note.isEdit ? (
                   <>
-                    <button className="save-btn" onClick={() => save_handle(note)}>
+                    <button className="save-btn" onClick={() => saveHandle(note)}>
                       Сохранить
                     </button>
-                    <button className="cancel-btn" onClick={() => cancel_handle(note.id)}>
+                    <button className="cancel-btn" onClick={() => cancelHandle(note.id)}>
                       Отмена
                     </button>
                   </>
                 ) : (
                   <button
                     className="edit-btn"
-                    onClick={() => edit_note(note)}
+                    onClick={() => editNote(note)}
                     disabled={isEditing}
                   >
                     Редактировать
@@ -119,7 +119,7 @@ function App() {
                 )}
                 <button
                   className="delete-btn"
-                  onClick={() => delete_note(note.id)}
+                  onClick={() => deleteNote(note.id)}
                   disabled={isEditing}
                 >
                   Удалить
@@ -130,7 +130,7 @@ function App() {
         </tbody>
       </table>
 
-      <button className="add-btn" onClick={add_element} disabled={isEditing}>
+      <button className="add-btn" onClick={addElement} disabled={isEditing}>
         Добавить заметку
       </button>
     </div>
