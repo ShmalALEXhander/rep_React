@@ -1,3 +1,9 @@
+.container {
+ margin-left: 400px;
+ margin-right: auto;
+  /* Обязательно задайте ширину */
+  width: 100%; 
+}
 /* Стиль для шапки таблицы */
 .table thead {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);

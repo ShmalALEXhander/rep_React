@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface Note {
   id: number;
@@ -14,6 +14,26 @@ function App() {
   const curr_id = useRef(1);
   const origNote = useRef<Note | null>(null); // Храним оригинал здесь
 
+  useEffect(() => {
+  fetch('https://localhost:7242/api/todos/completes', {  
+    method: 'GET',  
+  })
+  .then(response => {
+    if (!response.ok){
+      throw new Error('Ошибка загрузки данных' + response.status);
+    }
+    return response.json();
+  })
+  .then((data: Note[])=>{
+    setNotes(data);
+     const maxId = data.reduce((max, note) => Math.max(max, note.id), 0);
+      curr_id.current = maxId + 1;
+  })
+  .catch(error => {
+    console.error('Ошибка при загрузке заметки', error);
+  });
+}, []);
+
   const addElement = () => {
     const newNote = {
       id: curr_id.current,
@@ -22,13 +42,40 @@ function App() {
       data: new Date().toLocaleDateString(),
       isEdit: false,
     };
-    setNotes([...notes, newNote]);
-    curr_id.current += 1;
+
+    fetch('https://localhost:7242/api/todos/completes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newNote),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Ошибка при добавлении заметки');
+        }
+        return response.json();
+      })
+      .then((createdNote: Note) => {
+        setNotes(prev => [...prev, { ...createdNote, isEdit: false }]);
+        curr_id.current += 1;
+      })
+      .catch(error => {
+        console.error('Ошибка при добавлении:', error);     
+      });
   };
 
+
   const deleteNote = (id: number) => {
-    setNotes(notes.filter(n => n.id !== id))
-  }
+   fetch(`https://localhost:7242/api/todos/completes/${id}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Ошибка при удалении');
+        }
+        setNotes(prev => prev.filter(n => n.id !== id));
+      })
+      .catch(error => console.error('Ошибка удаления:', error));
+  };
 
   const editNote = (note: Note) => {
     origNote.current = { ...note }; // Запоминаем оригинал перед редактированием
@@ -37,10 +84,31 @@ function App() {
   };
 
   const saveHandle = (note: Note) => {
-    setNotes(notes.map(n => 
-      n.id === note.id ? { ...note, isEdit: false } : n
-    ));
-    origNote.current = null; 
+    setNotes(prev => prev.map(n => (n.id === note.id ? { ...note, isEdit: false }  : n))
+    );
+    fetch(`https://localhost:7242/api/todos/completes/${note.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(note),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Ошибка при сохранении');
+        }
+        else if(response.status === 204){
+          return null;
+        }
+    
+      })
+      .then((updatedNote: Note) => {
+        setNotes(prev => prev.map(n => (n.id === updatedNote.id ? updatedNote : n))
+        );
+      })
+      .catch(error => {
+        console.error('Ошибка при сохранении:', error);
+      });
+
+    origNote.current = null;
   };
 
   const cancelHandle = (noteId: number) => {
