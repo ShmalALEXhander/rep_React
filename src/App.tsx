@@ -3,10 +3,10 @@ import { useState, useRef, useEffect } from 'react';
 
 interface Note {
   id: number;
-  title: string;
-  content: string;
-  data: string;
-  isEdit: boolean;
+  title?: string;
+  content?: string;
+  data?: string;
+  isEdit?: boolean;
 }
 
 function App() {
@@ -92,18 +92,20 @@ function App() {
       body: JSON.stringify(note),
     })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Ошибка при сохранении');
-        }
-        else if(response.status === 204){
+        if (response.status === 204){
           return null;
         }
-    
+        else if (!response.ok){
+          throw new Error('Ошибка при сохранении');
+        }
+        return response.json();
       })
-      .then((updatedNote: Note) => {
-        setNotes(prev => prev.map(n => (n.id === updatedNote.id ? updatedNote : n))
-        );
-      })
+      .then(updatedData => {
+      if (updatedData) {
+        // Если сервер возвращает обновленные данные, можно их применить
+        setNotes(prev => prev.map(n => (n.id === updatedData.id ? updatedData : n)));
+      }
+    })
       .catch(error => {
         console.error('Ошибка при сохранении:', error);
       });
@@ -148,8 +150,10 @@ function App() {
               <td>
                 {note.isEdit ? (
                   <input
-                    value={note.title}
-                    onChange={(e) => changeHandle(note.id, 'title', e.target.value)}
+                    id = {`title-${note.id}`}
+                    name = "title"
+                    value = {note.title}
+                    onChange = {(e) => changeHandle(note.id, 'title', e.target.value)}
                   />
                 ) : (
                   note.title
@@ -158,6 +162,8 @@ function App() {
               <td>
                 {note.isEdit ? (
                   <input
+                    id = {`content-${note.id}`}
+                    name = "content"
                     value={note.content}
                     onChange={(e) => changeHandle(note.id, 'content', e.target.value)}
                   />
