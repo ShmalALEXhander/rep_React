@@ -13,9 +13,13 @@ function App() {
   const [notes, setNotes] = useState<Note[]>([]);
   const curr_id = useRef(1);
   const origNote = useRef<Note | null>(null); // Храним оригинал здесь
+  
+
+  const headers = { 'Content-Type':'application/json'};
+  const URL = 'https://localhost:7242/api/todos';
 
   useEffect(() => {
-  fetch('https://localhost:7242/api/todos/completes', {  
+  fetch(URL + '/completes', {  
     method: 'GET',  
   })
   .then(response => {
@@ -43,9 +47,9 @@ function App() {
       isEdit: false,
     };
 
-    fetch('https://localhost:7242/api/todos/completes', {
+    fetch(URL + '/completes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(newNote),
     })
       .then(response => {
@@ -63,9 +67,8 @@ function App() {
       });
   };
 
-
   const deleteNote = (id: number) => {
-   fetch(`https://localhost:7242/api/todos/completes/${id}`, {
+   fetch(URL + `/completes/${id}`, {
       method: 'DELETE',
     })
       .then(response => {
@@ -86,9 +89,9 @@ function App() {
   const saveHandle = (note: Note) => {
     setNotes(prev => prev.map(n => (n.id === note.id ? { ...note, isEdit: false }  : n))
     );
-    fetch(`https://localhost:7242/api/todos/completes/${note.id}`, {
+    fetch(URL + `/completes/${note.id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(note),
     })
       .then(response => {
@@ -102,7 +105,6 @@ function App() {
       })
       .then(updatedData => {
       if (updatedData) {
-        // Если сервер возвращает обновленные данные, можно их применить
         setNotes(prev => prev.map(n => (n.id === updatedData.id ? updatedData : n)));
       }
     })
