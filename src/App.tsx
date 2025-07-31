@@ -10,19 +10,15 @@ interface Note {
 }
 
 function App() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const curr_id = useRef(1);
+  const [notes, setNotes] = useState <Note[]>([]);
   const origNote = useRef<Note | null>(null); // Храним оригинал здесь
   
-
   const headers = { 'Content-Type':'application/json'};
   const URL = 'https://localhost:7242/api/todos';
 
   useEffect(() => {
-  fetch(URL + '/completes', {  
-    method: 'GET',  
-  })
-  .then(response => {
+  fetch(URL + '/completes', {  method: 'GET', } ) // так обозначается в js подаваемый объект (кусоек)
+  .then(response => { //создаёт объект промиса
     if (!response.ok){
       throw new Error('Ошибка загрузки данных' + response.status);
     }
@@ -30,8 +26,6 @@ function App() {
   })
   .then((data: Note[])=>{
     setNotes(data);
-     const maxId = data.reduce((max, note) => Math.max(max, note.id), 0);
-      curr_id.current = maxId + 1;
   })
   .catch(error => {
     console.error('Ошибка при загрузке заметки', error);
@@ -39,18 +33,10 @@ function App() {
 }, []);
 
   const addElement = () => {
-    const newNote = {
-      id: curr_id.current,
-      title: `Заметка ${curr_id.current}`,
-      content: `Содержание ${curr_id.current}`,
-      data: new Date().toLocaleDateString(),
-      isEdit: false,
-    };
-
     fetch(URL + '/completes', {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify(newNote),
+      body: JSON.stringify({})
     })
       .then(response => {
         if (!response.ok) {
@@ -60,7 +46,6 @@ function App() {
       })
       .then((createdNote: Note) => {
         setNotes(prev => [...prev, { ...createdNote, isEdit: false }]);
-        curr_id.current += 1;
       })
       .catch(error => {
         console.error('Ошибка при добавлении:', error);     
@@ -81,7 +66,7 @@ function App() {
   };
 
   const editNote = (note: Note) => {
-    origNote.current = { ...note }; // Запоминаем оригинал перед редактированием
+    origNote.current = { ...note };
     setNotes(notes.map(n => n.id === note.id ? { ...n, isEdit: true } : { ...n, isEdit: false }
     ));
   };
@@ -122,10 +107,10 @@ function App() {
       setNotes(notes.map(n => n.id === noteId ? { ...n, isEdit: false } : n));
     }
     origNote.current = null;
-  };
+  }; 
 
   const changeHandle = (id: number, field: keyof Note, value: string) => {
-    setNotes(notes.map(n => n.id === id  ? { ...n, [field]: value } : n
+    setNotes(notes.map(n => n.id === id  ? { ...n, [field]: value } : n 
     ));
   };
 
